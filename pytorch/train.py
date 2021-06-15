@@ -93,7 +93,7 @@ parser.add_argument('--cuda', action='store_true',
 parser.add_argument('--adaptive', action='store_true',
                     help='use adaptive softmax')
 parser.add_argument('--div_val', type=int, default=1,
-                    help='divident value for adapative input and softmax')
+                    help='divident value for adaptative input and softmax')
 parser.add_argument('--pre_lnorm', action='store_true',
                     help='apply LayerNorm to the input instead of the output')
 parser.add_argument('--varlen', action='store_true',
@@ -227,7 +227,7 @@ def weights_init(m):
         if hasattr(m, 'emb_projs'):
             for i in range(len(m.emb_projs)):
                 if m.emb_projs[i] is not None:
-                    nn.init.normal_(m.emb_projs[i], 0.0, args.proj_init_std)
+                    nn.init.normal_(m.emb_projs[i].parameter, 0.0, args.proj_init_std)
     elif classname.find('Embedding') != -1:
         if hasattr(m, 'weight'):
             init_weight(m.weight)
@@ -239,7 +239,7 @@ def weights_init(m):
         if hasattr(m, 'out_projs'):
             for i in range(len(m.out_projs)):
                 if m.out_projs[i] is not None:
-                    nn.init.normal_(m.out_projs[i], 0.0, args.proj_init_std)
+                    nn.init.normal_(m.out_projs[i].parameter, 0.0, args.proj_init_std)
     elif classname.find('LayerNorm') != -1:
         if hasattr(m, 'weight'):
             nn.init.normal_(m.weight, 1.0, args.init_std)
@@ -474,11 +474,11 @@ def train():
                     optimizer_sparse.param_groups[0]['lr'] = curr_lr * 2
             else:
                 if args.scheduler == 'cosine':
-                    scheduler.step(train_step)
+                    scheduler.step()
                     if args.sample_softmax > 0:
-                        scheduler_sparse.step(train_step)
+                        scheduler_sparse.step()
         elif args.scheduler == 'inv_sqrt':
-            scheduler.step(train_step)
+            scheduler.step()
 
         if train_step % args.log_interval == 0:
             cur_loss = train_loss / args.log_interval
@@ -519,9 +519,9 @@ def train():
 
             # dev-performance based learning rate annealing
             if args.scheduler == 'dev_perf':
-                scheduler.step(val_loss)
+                scheduler.step()
                 if args.sample_softmax > 0:
-                    scheduler_sparse.step(val_loss)
+                    scheduler_sparse.step()
 
             eval_start_time = time.time()
 

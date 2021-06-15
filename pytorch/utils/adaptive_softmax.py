@@ -6,6 +6,11 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+class ParameterModule(nn.Module):
+    def __init__(self, value):
+        self.parameter = nn.Parameter(value)
+
+
 class AdaptiveLogSoftmax(nn.Module):
     def __init__(self, in_features, n_classes, cutoffs, keep_order=False):
         super(AdaptiveLogSoftmax, self).__init__()
