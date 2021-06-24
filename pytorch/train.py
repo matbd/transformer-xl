@@ -265,14 +265,17 @@ def update_dropatt(m):
     if hasattr(m, 'dropatt'):
         m.dropatt.p = args.dropatt
 
-if args.restart:
-    with open(os.path.join(args.restart_dir, 'model.pt'), 'rb') as f:
+model_path = os.path.join(args.restart_dir, 'model.pt')
+if args.restart and os.path.exists(model_path):
+    with open(model_path, 'rb') as f:
         model = torch.load(f)
     if not args.fp16:
         model = model.float()
     model.apply(update_dropout)
     model.apply(update_dropatt)
 else:
+    if args.restart:
+        print('No saved model found: %s' % model_path)
     model = MemTransformerLM(ntokens, args.n_layer, args.n_head, args.d_model,
         args.d_head, args.d_inner, args.dropout, args.dropatt,
         tie_weight=args.tied, d_embed=args.d_embed, div_val=args.div_val,
